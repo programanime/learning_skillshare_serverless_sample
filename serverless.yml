@@ -1,0 +1,50 @@
+service: hello-world
+frameworkVersion: '2'
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  lambdaHashingVersion: 20201221
+
+#  stage: dev
+#  region: us-east-1
+
+functions:
+  hello:
+    handler: handler.hello
+    description: "hello world test"
+    timeout: 15
+    tags:
+        alias: person
+  createContact:
+    handler: handler.createContact
+    events:
+      - http
+      path: contacts/create
+      method: post
+      
+resources:
+  Resource:
+    contactsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      tableName:contactsTable
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: email
+          AttributeType: S
+      KeySchema:
+        - AttributeName: email
+        KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacity: 5
+        WriteCapacity: 5
+
+plugins:
+  - serverless-webpack
+  
+custom:
+  webpack:
+    webpackConfig: "webpack.config.js"
+    includeModules: "false"
+    packager: "npm"
